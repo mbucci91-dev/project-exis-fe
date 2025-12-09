@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Crea un'istanza axios personalizzata
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_BASE_URL || 'https://project-exis-be.onrender.com',
+  baseURL: process.env.REACT_APP_API_BASE_URL || 'https://project-exis-be.onrender.com/api/',
   headers: {
     'Content-Type': 'application/json',
   },
