@@ -74,7 +74,7 @@ const ProfilePage = () => {
     setActionLoading(true);
     try {
       await dispatch(blockCard(selectedCard.id)).unwrap();
-      setSuccessMessage('Carta bloccata con successo!');
+      setSuccessMessage('Carta bloccata con successo! (MOCK)');
       setOpenBlockDialog(false);
     } catch (error) {
       setProfileError(error);
@@ -190,16 +190,17 @@ const ProfilePage = () => {
                       {selectedCard.holder}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      **** **** **** {selectedCard.pan.slice(-4)}
+                      {selectedCard.pan_masked || `**** **** **** ${selectedCard.pan?.slice(-4) || ''}`}
                     </Typography>
-                    {selectedCard.blocked && (
-                      <Chip
-                        label="CARTA BLOCCATA"
-                        color="error"
-                        size="small"
-                        sx={{ mt: 1 }}
-                      />
-                    )}
+                    <Typography variant="caption" color="text.secondary">
+                      Scad: {selectedCard.exp_date}
+                    </Typography>
+                    <Chip
+                      label={selectedCard.status === 'active' ? 'ATTIVA' : selectedCard.status === 'blocked' ? 'BLOCCATA' : 'NON ATTIVA'}
+                      color={selectedCard.status === 'active' ? 'success' : 'error'}
+                      size="small"
+                      sx={{ mt: 1 }}
+                    />
                   </Box>
                 </Box>
 
@@ -218,11 +219,14 @@ const ProfilePage = () => {
                     color="error"
                     startIcon={<BlockIcon />}
                     onClick={() => setOpenBlockDialog(true)}
-                    disabled={actionLoading || selectedCard.blocked}
+                    disabled={actionLoading || selectedCard.status === 'blocked'}
                     fullWidth
                   >
-                    {selectedCard.blocked ? 'Carta Già Bloccata' : 'Blocca Carta'}
+                    {selectedCard.status === 'blocked' ? 'Carta Già Bloccata' : 'Blocca Carta'}
                   </Button>
+                  <Alert severity="info" sx={{ mt: 1, fontSize: '0.75rem' }}>
+                    ⚠️ Funzionalità con dati MOCK (backend in sviluppo)
+                  </Alert>
                 </Box>
               </>
             ) : (
@@ -255,7 +259,7 @@ const ProfilePage = () => {
                         border: '1px solid',
                         borderColor: 'grey.300',
                         borderRadius: 2,
-                        backgroundColor: card.blocked ? 'error.light' : 'white',
+                        backgroundColor: card.status === 'blocked' || card.status !== 'active' ? 'error.light' : 'white',
                       }}
                     >
                       <Typography variant="body2" color="text.secondary">
@@ -265,14 +269,17 @@ const ProfilePage = () => {
                         {card.holder}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        **** {card.pan.slice(-4)}
+                        {card.pan_masked || `**** **** **** ${card.pan?.slice(-4) || ''}`}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
                         Scad. {card.exp_date}
                       </Typography>
-                      {card.blocked && (
-                        <Chip label="BLOCCATA" color="error" size="small" sx={{ mt: 1 }} />
-                      )}
+                      <Chip 
+                        label={card.status === 'active' ? 'ATTIVA' : card.status === 'blocked' ? 'BLOCCATA' : 'NON ATTIVA'} 
+                        color={card.status === 'active' ? 'success' : 'error'} 
+                        size="small" 
+                        sx={{ mt: 1 }} 
+                      />
                     </Box>
                   </Grid>
                 ))}
@@ -284,12 +291,17 @@ const ProfilePage = () => {
         </Grid>
       </Grid>
 
+      {/* TODO: Dialog da implementare quando il backend sarà pronto */}
+      {/* Dialog Dettagli Carta */}
       {/* Dialog Dettagli Carta */}
       <Dialog open={openDetailsDialog} onClose={() => setOpenDetailsDialog(false)}>
         <DialogTitle>
-          <Typography variant="h5" fontWeight={600}>
-            Dettagli Carta
-          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography variant="h5" fontWeight={600}>
+              Dettagli Carta
+            </Typography>
+            <Chip label="MOCK DATA" color="warning" size="small" />
+          </Box>
         </DialogTitle>
         <DialogContent>
           {cardDetails ? (
@@ -339,11 +351,17 @@ const ProfilePage = () => {
       {/* Dialog Conferma Blocco */}
       <Dialog open={openBlockDialog} onClose={() => setOpenBlockDialog(false)}>
         <DialogTitle>
-          <Typography variant="h5" fontWeight={600}>
-            Conferma Blocco Carta
-          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography variant="h5" fontWeight={600}>
+              Conferma Blocco Carta
+            </Typography>
+            <Chip label="MOCK DATA" color="warning" size="small" />
+          </Box>
         </DialogTitle>
         <DialogContent>
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            ⚠️ Questa è una simulazione. Il backend non è ancora implementato.
+          </Alert>
           <Typography>
             Sei sicuro di voler bloccare la carta <strong>{selectedCard?.holder}</strong>?
             Questa azione potrebbe non essere reversibile.

@@ -5,7 +5,8 @@ const authService = {
   // Login
   login: async (username, password) => {
     const response = await api.post('/login', { username, password });
-    const { token } = response.data;
+    // La risposta ha la struttura: { message, code, response: { token, username, status } }
+    const { token, username: userName, status } = response.data.response;
     
     // Salva il token nel localStorage
     localStorage.setItem('token', token);
@@ -13,7 +14,7 @@ const authService = {
     // Decodifica il token per ottenere le informazioni utente
     const decodedToken = jwtDecode(token);
     
-    return { token, user: decodedToken };
+    return { token, user: { ...decodedToken, username: userName, status } };
   },
 
   // Logout
