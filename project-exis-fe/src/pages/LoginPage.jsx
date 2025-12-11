@@ -166,12 +166,6 @@ const LoginPage = () => {
               )}
             </Button>
           </form>
-
-          <Box sx={{ mt: 2, textAlign: 'center' }}>
-            <Typography variant="body2" color="text.secondary">
-              Credenziali di test: username / password
-            </Typography>
-          </Box>
         </Paper>
       </Box>
     </Container>

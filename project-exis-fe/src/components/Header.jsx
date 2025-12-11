@@ -34,7 +34,7 @@ const Header = () => {
             }}
             onClick={() => navigate('/')}
           >
-            💳 CardManager
+            💳 Exis
           </Typography>
 
           {/* Navigazione - Visibile solo se autenticato */}

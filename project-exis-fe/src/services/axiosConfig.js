@@ -5,7 +5,9 @@ const api = axios.create({
   baseURL: process.env.REACT_APP_API_BASE_URL || 'https://project-exis-be.onrender.com/api/',
   headers: {
     'Content-Type': 'application/json',
+    'Accept': 'application/json',
   },
+  // withCredentials: false, // Cambia a true se il backend richiede credentials
 });
 
 // Interceptor per aggiungere il token JWT a ogni richiesta

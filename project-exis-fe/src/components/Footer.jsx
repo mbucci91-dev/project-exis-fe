@@ -22,7 +22,7 @@ const Footer = () => {
           {/* Informazioni aziendali */}
           <Grid item xs={12} md={4}>
             <Typography variant="h6" gutterBottom fontWeight={600}>
-              CardManager
+              Exis
             </Typography>
             <Typography variant="body2" color="text.secondary">
               Sistema di gestione carte di pagamento
@@ -37,8 +37,8 @@ const Footer = () => {
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
               <EmailIcon sx={{ mr: 1, fontSize: 18, color: 'text.secondary' }} />
               <Typography variant="body2" color="text.secondary">
-                <Link href="mailto:info@cardmanager.it" color="inherit" underline="hover">
-                  info@cardmanager.it
+                <Link href="mailto:info@exis.it" color="inherit" underline="hover">
+                  info@exis.it
                 </Link>
               </Typography>
             </Box>
@@ -78,7 +78,7 @@ const Footer = () => {
         {/* Copyright */}
         <Box sx={{ mt: 3, pt: 2, borderTop: '1px solid #e0e0e0' }}>
           <Typography variant="body2" color="text.secondary" align="center">
-            © {currentYear} CardManager. Tutti i diritti riservati.
+            © {currentYear} Exis. Tutti i diritti riservati.
           </Typography>
         </Box>
       </Container>

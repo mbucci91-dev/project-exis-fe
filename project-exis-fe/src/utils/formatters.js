@@ -28,26 +28,41 @@ export const formatAmount = (amount) => {
   return formatted;
 };
 
-// Formattazione della data
+// Formattazione della data (dd/MM/YY - HH:mm)
 export const formatDate = (dateString) => {
   if (!dateString) return '';
+  
+  // Se il formato è già "dd/mm/yyyy - HH:MM" dal backend, ritorna così com'è
+  if (dateString.includes(' - ')) {
+    return dateString;
+  }
+  
+  // Altrimenti, prova a parsare e formattare
   const date = new Date(dateString);
-  return new Intl.DateTimeFormat('it-IT', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(date);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = String(date.getFullYear()).slice(-2);
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  
+  return `${day}/${month}/${year} - ${hours}:${minutes}`;
 };
 
 // Formattazione del circuito carta
 export const getCardIcon = (circuit) => {
+  if (!circuit) return '💳 Carta';
+  
   const circuits = {
     visa: '💳 Visa',
+    Visa: '💳 Visa',
     mastercard: '💳 Mastercard',
+    Mastercard: '💳 Mastercard',
     amex: '💳 American Express',
+    'American Express': '💳 American Express',
     maestro: '💳 Maestro',
+    Maestro: '💳 Maestro',
   };
-  return circuits[circuit?.toLowerCase()] || '💳 ' + circuit;
+  
+  const circuitLower = circuit.toLowerCase();
+  return circuits[circuitLower] || circuits[circuit] || `💳 ${circuit}`;
 };
