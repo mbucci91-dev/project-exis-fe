@@ -16,9 +16,12 @@ import {
   Chip,
 } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchCards, blockCard, fetchCardDetails } from '../redux/slices/cardsSlice';
+import { fetchCards } from '../redux/slices/cardsSlice';
 import userService from '../services/userService';
+import cardService from '../services/cardService';
+import challengeService from '../services/challengeService';
 import { formatFullPAN, formatExpDate, getCardIcon } from '../utils/formatters';
+import PinChallengeDialog from '../components/PinChallengeDialog';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import BlockIcon from '@mui/icons-material/Block';
@@ -26,15 +29,23 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 
 const ProfilePage = () => {
   const dispatch = useDispatch();
-  const { cards, selectedCard, cardDetails, loading } = useSelector((state) => state.cards);
+  const { cards, selectedCard, loading } = useSelector((state) => state.cards);
   const { user } = useSelector((state) => state.auth);
 
   const [profileData, setProfileData] = useState(null);
   const [profileLoading, setProfileLoading] = useState(true);
   const [profileError, setProfileError] = useState(null);
+  
+  // Challenge states
+  const [showPinDialog, setShowPinDialog] = useState(false);
+  const [challengeData, setChallengeData] = useState(null);
+  const [challengeLoading, setChallengeLoading] = useState(false);
+  const [pendingAction, setPendingAction] = useState(null); // 'details' | 'block'
+  
+  // Results states
+  const [cardDetails, setCardDetails] = useState(null);
   const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
   const [openBlockDialog, setOpenBlockDialog] = useState(false);
-  const [actionLoading, setActionLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
   // Carica i dati del profilo
@@ -54,33 +65,90 @@ const ProfilePage = () => {
     dispatch(fetchCards());
   }, [dispatch]);
 
+  // Inizia il challenge per visualizzare i dettagli della carta
   const handleShowCardDetails = async () => {
     if (!selectedCard) return;
     
-    setActionLoading(true);
     try {
-      await dispatch(fetchCardDetails(selectedCard.id)).unwrap();
-      setOpenDetailsDialog(true);
+      setChallengeLoading(true);
+      setProfileError(null);
+      
+      const challenge = await challengeService.requestChallenge();
+      setChallengeData(challenge);
+      setPendingAction('details');
+      setShowPinDialog(true);
     } catch (error) {
-      setProfileError(error);
+      setProfileError(error.response?.data?.message || 'Errore nella richiesta di verifica');
     } finally {
-      setActionLoading(false);
+      setChallengeLoading(false);
     }
   };
 
-  const handleBlockCard = async () => {
+  // Inizia il challenge per bloccare la carta
+  const handleBlockCardRequest = async () => {
     if (!selectedCard) return;
-
-    setActionLoading(true);
+    
     try {
-      await dispatch(blockCard(selectedCard.id)).unwrap();
-      setSuccessMessage('Carta bloccata con successo! (MOCK)');
+      setChallengeLoading(true);
+      setProfileError(null);
+      
+      const challenge = await challengeService.requestChallenge();
+      setChallengeData(challenge);
+      setPendingAction('block');
+      setShowPinDialog(true);
       setOpenBlockDialog(false);
     } catch (error) {
-      setProfileError(error);
+      setProfileError(error.response?.data?.message || 'Errore nella richiesta di verifica');
     } finally {
-      setActionLoading(false);
+      setChallengeLoading(false);
     }
+  };
+
+  // Callback quando l'utente invia le cifre del PIN
+  const handlePinSubmit = async (digits) => {
+    if (!challengeData || !selectedCard) return;
+
+    setChallengeLoading(true);
+    setProfileError(null);
+
+    const challengePayload = {
+      digits,
+      challenge_token: challengeData.challenge_token,
+    };
+
+    try {
+      if (pendingAction === 'details') {
+        // Richiedi dettagli carta
+        const details = await cardService.getCardDetails(selectedCard.id, challengePayload);
+        setCardDetails(details);
+        setShowPinDialog(false);
+        setOpenDetailsDialog(true);
+      } else if (pendingAction === 'block') {
+        // Blocca carta
+        const result = await cardService.blockCard(selectedCard.id, challengePayload);
+        setSuccessMessage(result.message || 'Carta bloccata con successo');
+        setShowPinDialog(false);
+        // Ricarica le carte per aggiornare lo stato
+        await dispatch(fetchCards()).unwrap();
+      }
+    } catch (error) {
+      if (error.response?.status === 403) {
+        setProfileError('PIN non valido. Riprova.');
+      } else {
+        setProfileError(error.response?.data?.message || 'Errore durante l\'operazione');
+      }
+    } finally {
+      setChallengeLoading(false);
+      setChallengeData(null);
+      setPendingAction(null);
+    }
+  };
+
+  // Chiude il dialog PIN
+  const handleClosePinDialog = () => {
+    setShowPinDialog(false);
+    setChallengeData(null);
+    setPendingAction(null);
   };
 
   if (profileLoading) {
@@ -192,14 +260,13 @@ const ProfilePage = () => {
                     <Typography variant="body2" color="text.secondary">
                       {selectedCard.pan_masked || `**** **** **** ${selectedCard.pan?.slice(-4) || ''}`}
                     </Typography>
-                    <Typography variant="caption" color="text.secondary">
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
                       Scad: {selectedCard.exp_date}
                     </Typography>
                     <Chip
                       label={selectedCard.status === 'active' ? 'ATTIVA' : selectedCard.status === 'blocked' ? 'BLOCCATA' : 'NON ATTIVA'}
                       color={selectedCard.status === 'active' ? 'success' : 'error'}
                       size="small"
-                      sx={{ mt: 1 }}
                     />
                   </Box>
                 </Box>
@@ -209,23 +276,23 @@ const ProfilePage = () => {
                     variant="contained"
                     startIcon={<VisibilityIcon />}
                     onClick={handleShowCardDetails}
-                    disabled={actionLoading}
+                    disabled={challengeLoading}
                     fullWidth
                   >
-                    Mostra Dati Carta
+                    {challengeLoading ? 'Caricamento...' : 'Mostra Dati Carta'}
                   </Button>
                   <Button
                     variant="outlined"
                     color="error"
                     startIcon={<BlockIcon />}
                     onClick={() => setOpenBlockDialog(true)}
-                    disabled={actionLoading || selectedCard.status === 'blocked'}
+                    disabled={challengeLoading || selectedCard.status === 'blocked'}
                     fullWidth
                   >
                     {selectedCard.status === 'blocked' ? 'Carta Già Bloccata' : 'Blocca Carta'}
                   </Button>
                   <Alert severity="info" sx={{ mt: 1, fontSize: '0.75rem' }}>
-                    ⚠️ Funzionalità con dati MOCK (backend in sviluppo)
+                    🔒 Richiede verifica PIN per sicurezza
                   </Alert>
                 </Box>
               </>
@@ -271,14 +338,13 @@ const ProfilePage = () => {
                       <Typography variant="body2" color="text.secondary">
                         {card.pan_masked || `**** **** **** ${card.pan?.slice(-4) || ''}`}
                       </Typography>
-                      <Typography variant="caption" color="text.secondary">
+                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
                         Scad. {card.exp_date}
                       </Typography>
                       <Chip 
                         label={card.status === 'active' ? 'ATTIVA' : card.status === 'blocked' ? 'BLOCCATA' : 'NON ATTIVA'} 
                         color={card.status === 'active' ? 'success' : 'error'} 
-                        size="small" 
-                        sx={{ mt: 1 }} 
+                        size="small"
                       />
                     </Box>
                   </Grid>
@@ -291,96 +357,127 @@ const ProfilePage = () => {
         </Grid>
       </Grid>
 
-      {/* TODO: Dialog da implementare quando il backend sarà pronto */}
       {/* Dialog Dettagli Carta */}
-      {/* Dialog Dettagli Carta */}
-      <Dialog open={openDetailsDialog} onClose={() => setOpenDetailsDialog(false)}>
+      <Dialog open={openDetailsDialog} onClose={() => setOpenDetailsDialog(false)} maxWidth="sm" fullWidth>
         <DialogTitle>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant="h5" fontWeight={600}>
-              Dettagli Carta
-            </Typography>
-            <Chip label="MOCK DATA" color="warning" size="small" />
-          </Box>
+          <Typography variant="h5" fontWeight={600}>
+            Dettagli Carta
+          </Typography>
         </DialogTitle>
         <DialogContent>
           {cardDetails ? (
             <Box sx={{ pt: 2 }}>
+              <Alert severity="success" sx={{ mb: 3 }}>
+                🔓 Dati decifrati con successo
+              </Alert>
+              
               <Box sx={{ mb: 2 }}>
                 <Typography variant="body2" color="text.secondary">
                   Numero Carta (PAN)
                 </Typography>
-                <Typography variant="h6" fontWeight={500}>
-                  {formatFullPAN(cardDetails.pan)}
+                <Typography variant="h6" fontWeight={500} sx={{ fontFamily: 'monospace' }}>
+                  {cardDetails.decrypted_pan || formatFullPAN(cardDetails.pan)}
                 </Typography>
               </Box>
+              
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="body2" color="text.secondary">
+                  CVV
+                </Typography>
+                <Typography variant="h6" fontWeight={500} sx={{ fontFamily: 'monospace' }}>
+                  {cardDetails.decrypted_cvv || cardDetails.cvv || '***'}
+                </Typography>
+              </Box>
+              
               <Box sx={{ mb: 2 }}>
                 <Typography variant="body2" color="text.secondary">
                   Intestatario
                 </Typography>
                 <Typography variant="h6" fontWeight={500}>
-                  {cardDetails.holder}
+                  {selectedCard?.holder}
                 </Typography>
               </Box>
+              
               <Box sx={{ mb: 2 }}>
                 <Typography variant="body2" color="text.secondary">
                   Scadenza
                 </Typography>
                 <Typography variant="h6" fontWeight={500}>
-                  {formatExpDate(cardDetails.exp_date)}
+                  {formatExpDate(selectedCard?.exp_date)}
                 </Typography>
               </Box>
+              
               <Box sx={{ mb: 2 }}>
                 <Typography variant="body2" color="text.secondary">
                   Circuito
                 </Typography>
                 <Typography variant="h6" fontWeight={500}>
-                  {cardDetails.circuit}
+                  {selectedCard?.circuit}
                 </Typography>
               </Box>
+              
+              <Alert severity="warning" sx={{ mt: 3 }}>
+                ⚠️ Non condividere mai questi dati con nessuno
+              </Alert>
             </Box>
           ) : (
-            <CircularProgress />
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
+              <CircularProgress />
+            </Box>
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenDetailsDialog(false)}>Chiudi</Button>
+          <Button onClick={() => {
+            setOpenDetailsDialog(false);
+            setCardDetails(null);
+          }}>
+            Chiudi
+          </Button>
         </DialogActions>
       </Dialog>
 
       {/* Dialog Conferma Blocco */}
       <Dialog open={openBlockDialog} onClose={() => setOpenBlockDialog(false)}>
         <DialogTitle>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant="h5" fontWeight={600}>
-              Conferma Blocco Carta
-            </Typography>
-            <Chip label="MOCK DATA" color="warning" size="small" />
-          </Box>
+          <Typography variant="h5" fontWeight={600}>
+            Conferma Blocco Carta
+          </Typography>
         </DialogTitle>
         <DialogContent>
           <Alert severity="warning" sx={{ mb: 2 }}>
-            ⚠️ Questa è una simulazione. Il backend non è ancora implementato.
+            ⚠️ Stai per bloccare definitivamente la carta. Questa azione potrebbe non essere reversibile.
           </Alert>
           <Typography>
-            Sei sicuro di voler bloccare la carta <strong>{selectedCard?.holder}</strong>?
-            Questa azione potrebbe non essere reversibile.
+            Vuoi procedere con il blocco della carta <strong>{selectedCard?.holder}</strong>?
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            Ti verrà richiesto di inserire alcune cifre del tuo PIN per confermare.
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenBlockDialog(false)} disabled={actionLoading}>
+          <Button onClick={() => setOpenBlockDialog(false)} disabled={challengeLoading}>
             Annulla
           </Button>
           <Button
-            onClick={handleBlockCard}
+            onClick={handleBlockCardRequest}
             color="error"
             variant="contained"
-            disabled={actionLoading}
+            disabled={challengeLoading}
           >
-            {actionLoading ? <CircularProgress size={24} /> : 'Blocca Carta'}
+            {challengeLoading ? <CircularProgress size={24} /> : 'Procedi'}
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Dialog PIN Challenge */}
+      <PinChallengeDialog
+        open={showPinDialog}
+        onClose={handleClosePinDialog}
+        onSubmit={handlePinSubmit}
+        indicesToAsk={challengeData?.indices_to_ask || []}
+        loading={challengeLoading}
+        title={pendingAction === 'details' ? 'Verifica per Visualizzazione' : 'Verifica per Blocco'}
+      />
     </Container>
   );
 };
