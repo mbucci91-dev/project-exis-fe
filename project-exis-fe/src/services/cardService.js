@@ -1,4 +1,5 @@
 import api from './axiosConfig';
+import { decryptFernetData } from '../utils/crypto';
 
 const cardService = {
   // Ottieni tutte le carte dell'utente
@@ -14,8 +15,19 @@ const cardService = {
     const response = await api.post(`/cards/${cardId}/details`, challengePayload);
     const data = response.data.response;
     
-    // Il backend invia i dati già decifrati dopo la verifica PIN
-    // Struttura attesa: { pan: "4532123456789010", cvv: "123", ... }
+    // Il backend invia dati cifrati con Fernet
+    // Struttura: { temp_key: "...", encrypted_data: { pan: "token", cvv: "token" } }
+    if (data.temp_key && data.encrypted_data) {
+      // Decifra i dati usando la chiave temporanea
+      const decrypted = await decryptFernetData(data.temp_key, data.encrypted_data);
+      return {
+        ...data,
+        decrypted_pan: decrypted.pan,
+        decrypted_cvv: decrypted.cvv,
+      };
+    }
+    
+    // Fallback: se il backend invia già in chiaro (per retrocompatibilità)
     return {
       ...data,
       decrypted_pan: data.pan,

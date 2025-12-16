@@ -20,7 +20,7 @@ const Footer = () => {
       <Container maxWidth="lg">
         <Grid container spacing={3}>
           {/* Informazioni aziendali */}
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Typography variant="h6" gutterBottom fontWeight={600}>
               Exis
             </Typography>
@@ -30,7 +30,7 @@ const Footer = () => {
           </Grid>
 
           {/* Contatti */}
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Typography variant="h6" gutterBottom fontWeight={600}>
               Contatti
             </Typography>
@@ -57,7 +57,7 @@ const Footer = () => {
           </Grid>
 
           {/* Link utili */}
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Typography variant="h6" gutterBottom fontWeight={600}>
               Link Utili
             </Typography>

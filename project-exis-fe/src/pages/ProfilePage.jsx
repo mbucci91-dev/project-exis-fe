@@ -187,7 +187,7 @@ const ProfilePage = () => {
 
       <Grid container spacing={3}>
         {/* Dati Utente */}
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Paper elevation={2} sx={{ p: 3 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
               <AccountCircleIcon sx={{ fontSize: 40, color: 'primary.main', mr: 2 }} />
@@ -227,7 +227,7 @@ const ProfilePage = () => {
         </Grid>
 
         {/* Gestione Carte */}
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Paper elevation={2} sx={{ p: 3 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
               <CreditCardIcon sx={{ fontSize: 40, color: 'primary.main', mr: 2 }} />
@@ -305,7 +305,7 @@ const ProfilePage = () => {
         </Grid>
 
         {/* Riepilogo Carte */}
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12 }}>
           <Paper elevation={2} sx={{ p: 3 }}>
             <Typography variant="h5" fontWeight={600} gutterBottom>
               Le Tue Carte
@@ -319,7 +319,7 @@ const ProfilePage = () => {
             ) : cards.length > 0 ? (
               <Grid container spacing={2}>
                 {cards.map((card) => (
-                  <Grid item xs={12} sm={6} md={4} key={card.id}>
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }} key={card.id}>
                     <Box
                       sx={{
                         p: 2,
@@ -359,10 +359,8 @@ const ProfilePage = () => {
 
       {/* Dialog Dettagli Carta */}
       <Dialog open={openDetailsDialog} onClose={() => setOpenDetailsDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>
-          <Typography variant="h5" fontWeight={600}>
-            Dettagli Carta
-          </Typography>
+        <DialogTitle sx={{ fontWeight: 600, fontSize: '1.5rem' }}>
+          Dettagli Carta
         </DialogTitle>
         <DialogContent>
           {cardDetails ? (
