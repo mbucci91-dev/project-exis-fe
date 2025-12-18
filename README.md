@@ -15,12 +15,6 @@ Sistema completo per la gestione di carte di pagamento con autenticazione JWT, v
 - **JWT-Decode** - Validazione Token
 - **React-Toastify** - Notifiche Toast
 
-### Backend (Richiesto)
-- **Flask** - Framework Python
-- **Flask-SQLAlchemy** - ORM
-- **Flask-JWT-Extended** - Autenticazione JWT
-- **Flask-CORS** - CORS handling
-
 ## 📁 Struttura del Progetto
 
 ```
@@ -164,12 +158,6 @@ L'applicazione sarà disponibile su [http://localhost:3000](http://localhost:300
 6. **Password**: In produzione, usa hash delle password (bcrypt)
 7. **Database**: In produzione, usa PostgreSQL invece di SQLite
 
-
-
----
-
-**Sviluppato con ❤️ usando React 19, Redux Toolkit e Material-UI**
-
 ### Tecnologie Utilizzate
 
 | Tecnologia | Versione | Scopo |
@@ -204,7 +192,3 @@ store
     ├── notification
     └── modal
 ```
-
----
-
-**Happy Coding! 🚀**
