@@ -217,10 +217,26 @@ const ProfilePage = () => {
 
             <Box sx={{ mb: 2 }}>
               <Typography variant="body2" color="text.secondary">
-                ID Utente
+                Indirizzo
               </Typography>
               <Typography variant="h6" fontWeight={500}>
-                #{user?.id || profileData?.id || 'N/A'}
+                {profileData?.address || 'N/A'}
+              </Typography>
+            </Box>
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="body2" color="text.secondary">
+                Telefono
+              </Typography>
+              <Typography variant="h6" fontWeight={500}>
+                {profileData?.phone || 'N/A'}
+              </Typography>
+            </Box>
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="body2" color="text.secondary">
+                Data di Nascita
+              </Typography>
+              <Typography variant="h6" fontWeight={500}>
+                {profileData?.dob || 'N/A'}
               </Typography>
             </Box>
           </Paper>
