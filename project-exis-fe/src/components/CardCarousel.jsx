@@ -86,7 +86,7 @@ const CardCarousel = ({ cards, selectedCard, onSelectCard }) => {
                 <Typography variant="body2" fontWeight={600}>
                   {getCardIcon(card.circuit)}
                 </Typography>
-                {card.blocked && (
+                {card.status == 'blocked' && (
                   <Chip
                     label="BLOCCATA"
                     size="small"
@@ -98,7 +98,7 @@ const CardCarousel = ({ cards, selectedCard, onSelectCard }) => {
 
               {/* PAN */}
               <Typography variant="h6" fontWeight={500} sx={{ mb: 2, letterSpacing: 1 }}>
-                {formatPAN(card.pan)}
+                {card.pan_masked}
               </Typography>
 
               {/* Footer con Nome e Scadenza */}

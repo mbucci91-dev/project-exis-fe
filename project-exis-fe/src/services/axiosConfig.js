@@ -2,12 +2,11 @@ import axios from 'axios';
 
 // Crea un'istanza axios personalizzata
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_BASE_URL || 'https://project-exis-be.onrender.com/api/',
+  baseURL: process.env.REACT_APP_API_BASE_URL || 'https://localhost:5000/api/',
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   },
-  // withCredentials: false, // Cambia a true se il backend richiede credentials
 });
 
 // Interceptor per aggiungere il token JWT a ogni richiesta
@@ -29,7 +28,6 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // Token scaduto o non valido
       localStorage.removeItem('token');
       window.location.href = '/login';
     }

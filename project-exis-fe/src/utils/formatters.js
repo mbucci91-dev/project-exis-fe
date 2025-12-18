@@ -1,7 +1,6 @@
 // Formattazione del PAN (numero carta)
 export const formatPAN = (pan) => {
   if (!pan) return '';
-  // Maschera tutto tranne le ultime 4 cifre
   const masked = '**** **** **** ' + pan.slice(-4);
   return masked;
 };
@@ -32,12 +31,10 @@ export const formatAmount = (amount) => {
 export const formatDate = (dateString) => {
   if (!dateString) return '';
   
-  // Se il formato è già "dd/mm/yyyy - HH:MM" dal backend, ritorna così com'è
   if (dateString.includes(' - ')) {
     return dateString;
   }
   
-  // Altrimenti, prova a parsare e formattare
   const date = new Date(dateString);
   const day = String(date.getDate()).padStart(2, '0');
   const month = String(date.getMonth() + 1).padStart(2, '0');

@@ -16,7 +16,7 @@ export const fetchCards = createAsyncThunk(
   }
 );
 
-// Thunk per ottenere i dettagli di una carta (usando MOCK fino all'implementazione backend)
+// Thunk per ottenere i dettagli di una carta
 export const fetchCardDetails = createAsyncThunk(
   'cards/fetchCardDetails',
   async (cardId, { rejectWithValue }) => {
@@ -31,7 +31,7 @@ export const fetchCardDetails = createAsyncThunk(
   }
 );
 
-// Thunk per bloccare una carta (usando MOCK fino all'implementazione backend)
+// Thunk per bloccare una carta
 export const blockCard = createAsyncThunk(
   'cards/blockCard',
   async (cardId, { rejectWithValue }) => {
@@ -87,7 +87,7 @@ const cardsSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      // Fetch card details (usando MOCK data fino all'implementazione backend)
+      // Fetch card details
       .addCase(fetchCardDetails.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -100,7 +100,7 @@ const cardsSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      // Block card (usando MOCK data fino all'implementazione backend)
+      // Block card
       .addCase(blockCard.pending, (state) => {
         state.loading = true;
         state.error = null;

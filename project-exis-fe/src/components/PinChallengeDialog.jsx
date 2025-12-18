@@ -34,7 +34,6 @@ const PinChallengeDialog = ({
   const [digits, setDigits] = useState({});
   const [error, setError] = useState('');
 
-  // Reset quando il dialog si apre/chiude
   useEffect(() => {
     if (open) {
       setDigits({});
@@ -53,15 +52,12 @@ const PinChallengeDialog = ({
   };
 
   const handleSubmit = () => {
-    // Verifica che tutte le cifre siano state inserite
     const allFilled = indicesToAsk.every(index => digits[index]?.length === 1);
     
     if (!allFilled) {
       setError('Inserisci tutte le cifre richieste');
       return;
     }
-
-    // Crea array ordinato delle cifre
     const orderedDigits = indicesToAsk.map(index => digits[index]);
     onSubmit(orderedDigits);
   };
@@ -70,11 +66,11 @@ const PinChallengeDialog = ({
     if (e.key === 'Enter') {
       const currentIdx = indicesToAsk.indexOf(index);
       if (currentIdx < indicesToAsk.length - 1) {
-        // Focus sul prossimo campo
+        
         const nextIndex = indicesToAsk[currentIdx + 1];
         document.getElementById(`pin-digit-${nextIndex}`)?.focus();
       } else {
-        // Ultimo campo, submit
+        
         handleSubmit();
       }
     }
